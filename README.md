@@ -73,6 +73,10 @@ MCCZImageView.{h|m}          Zoomable Image View              [OPTIONAL]
 MCCZImageView is a custom zoomable image view which is a UIScrollView subclass with out of the box features required
 to build an image gallery.
 
+## Full example
+
+Comming soon...
+
 
 ## License terms
 
