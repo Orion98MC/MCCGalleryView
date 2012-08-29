@@ -62,11 +62,12 @@ gv.onVisibleRangeChanged = ^(NSRange newRange) {
 
 Simply add this repository as a submodule to your project or copy the required files.
 
+```
 MCCGalleryView.{h|m}         The GalleryView main class       [REQUIRED]
 MCCActiveRangeCache.{h|m}    Backend cache                    [REQUIRED]
 MCCIndexedCache.{h|m}        MCCActiveRangeCache superclass   [REQUIRED]
 MCCZImageView.{h|m}          Zoomable Image View              [OPTIONAL]
-
+```
 
 ## MCCZImageView
 
