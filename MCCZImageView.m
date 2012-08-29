@@ -7,7 +7,6 @@
 //
 
 #import "MCCZImageView.h"
-#import "MCC.h"
 
 @interface MCCZImageView ()
 @property (retain, nonatomic) UIImageView *imageView;
