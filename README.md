@@ -75,7 +75,61 @@ to build an image gallery.
 
 ## Full example
 
-Comming soon...
+This is a full example of a gallery of UILabel-s created in the -[UIViewController viewDidLoad] method.
+This code creates a gallery in full screen and displays 40 pages of 130 pixels width. If you remove the pageWith statement each page will take the full screen minus the horizontal padding. By default, the gallery has pagingEnabled set to TRUE and decelerationRate to UIScrollViewDecelerationRateFast.
+
+
+```
+- (void)viewDidLoad
+{
+  [super viewDidLoad];
+	
+  static NSString *identifier = @"MyPagesCache"; // a reuse identifier  
+  __block MCCGalleryView *gv = [[[MCCGalleryView alloc]initWithFrame:self.view.bounds]autorelease];
+  
+  gv.pagesCount = 40;
+  
+  gv.pageBlock = ^UIView *(NSUInteger pageIndex) {
+    UIView *page = [gv dequeueReusablePageWithIdentifier:identifier];
+    
+    if (!page) {
+      UILabel *label = [[UILabel alloc]initWithFrame:CGRectZero];
+      label.backgroundColor = [UIColor blueColor];
+      label.textColor = [UIColor whiteColor];
+      label.textAlignment = UITextAlignmentCenter;
+      label.font = [UIFont boldSystemFontOfSize:18.0];
+      
+      page = label;
+    }
+    
+    /* Lets display a border on each page layer (requires: #import <QuartzCore/QuartzCore.h>) */
+    page.layer.borderWidth = 5.0;
+    page.layer.borderColor = pageIndex % 2 == 0 ?[UIColor greenColor].CGColor : [UIColor redColor].CGColor;
+    
+    /* set the page content */
+    ((UILabel *)page).text = [NSString stringWithFormat:@"Page: %u", pageIndex];
+        
+    return page;
+  };
+  
+  gv.recycleBlock = ^NSString *(UIView *page) {
+    ((UILabel*)page).text = nil; // release memory
+    return identifier;
+  };
+  
+  /* extra setup [OPTIONAL] */
+  gv.horizontalPadding = 20;                                /* default is 0 */
+  gv.pageWidth = 130;                                       /* default is bounds.size.width - horizontalPadding */
+  gv.pagingEnabled = FALSE;                                 /* default is YES */
+  gv.decelerationRate = UIScrollViewDecelerationRateNormal; /* default is UIScrollViewDecelerationRateFast */
+  
+  /* Load the pages */
+  [gv loadPages];
+  
+  [self.view addSubview:gv];
+}
+
+```
 
 
 ## License terms
