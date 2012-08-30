@@ -70,7 +70,7 @@
   self.norecycle = TRUE;
   for (NSUInteger index = _activeRange.location; index < NSMaxRange(_activeRange); index++) {
     if (![self objectAtIndex:index]) {
-      NSLog(@"Load page at index: %d", index);
+      //      NSLog(@"Load page at index: %d", index);
       id page = createBlock(index);
       NSAssert(page != nil, @"nil page for index %d", index);
       [self setObject:page atIndex:index];

@@ -86,12 +86,10 @@
 #pragma mark View management
 
 - (void)layoutSubviews {
-	[super layoutSubviews];
-	
   CGSize boundsSize = self.bounds.size;
   CGRect frameToCenter = imageView.frame;
   
-  if (frameToCenter.size.width > 0.0f) {
+  if (frameToCenter.size.width != 0.0f) {
     // Horizontally
     if (frameToCenter.size.width < boundsSize.width) {
       frameToCenter.origin.x = floorf((boundsSize.width - frameToCenter.size.width) / 2.0f);
@@ -105,11 +103,16 @@
     } else {
       frameToCenter.origin.y = 0.0f;
     }
-    
+  
     // Center if needed
-    if (!CGRectEqualToRect(self.imageView.frame, frameToCenter))
+    if (!CGRectEqualToRect(self.imageView.frame, frameToCenter)) {
       self.imageView.frame = frameToCenter;
+    }
+  } else {
+    //    NSLog(@"No frame to center: %@", imageView);
   }
+  
+  [super layoutSubviews];
 }
 
 - (void)setFrame:(CGRect)frame {

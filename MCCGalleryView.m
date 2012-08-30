@@ -250,7 +250,7 @@ NS_INLINE NSUInteger maxVisiblePagesInFrame(CGRect frame, NSUInteger pagesize) {
       page.hidden = TRUE;
     }
     
-    page.frame = frameForPageAtIndex(pageIndex, outerWidth, horizontalPadding, self.bounds.size.height);;
+    page.frame = frameForPageAtIndex(pageIndex, outerWidth, horizontalPadding, self.bounds.size.height);
     
     if (page.superview) {
       [UIView setAnimationsEnabled:TRUE];
