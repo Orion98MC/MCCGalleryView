@@ -44,7 +44,6 @@
                                                          v                         v   */
 @property (assign, nonatomic) NSInteger innerWidth; /* |<-->| <- inner width -> |<-->| */
 @property (assign, nonatomic) NSInteger outerWidth; /* |<------- outer width ------->| */
-//@property (assign, nonatomic) NSUInteger pagesCount;
 @property (assign, nonatomic) BOOL avoidScrollingComputation;
 
 // Single Tap detection
@@ -130,7 +129,7 @@
   
   /* Preloaded pages */
   NSInteger maxVisiblePages = maxVisiblePagesInFrame(self.bounds, outerWidth);
-  preload = maxVisiblePages + 1 - _visiblePagesRange.length; /* number of pages to also preload */
+  preload = MAX(maxVisiblePages + 1 - _visiblePagesRange.length, 2); /* number of pages to also preload */
   halfPreload = floorf((float)preload / 2.0f); /* cache the half */
   
   /* Content size */
@@ -149,7 +148,7 @@ NS_INLINE void _loadPages(NSRange visiblePagesRange, NSUInteger pagesCount, NSUI
   lastIndex = MIN(pagesCount - 1, lastIndex + (NSInteger)preload - (NSInteger)halfPreload);
   
   NSRange range = NSMakeRange((NSUInteger)firstIndex, (NSUInteger)(lastIndex - firstIndex + 1));
-  //  NSLog(@"Range: %@", NSStringFromRange(range));
+  //  NSLog(@"Active Range: %@", NSStringFromRange(range));
   [cache setActiveRange:range];
 }
 
@@ -171,6 +170,8 @@ NS_INLINE void _loadPages(NSRange visiblePagesRange, NSUInteger pagesCount, NSUI
   horizontalPadding = padding;
   [self setup]; 
 }
+
+- (NSInteger)innerWidth { return innerWidth; }
 
 
 NS_INLINE NSRange visiblePagesRangeInScrollview(UIScrollView *scrollview, NSInteger pagewidth, NSUInteger pagescount) {
@@ -204,7 +205,9 @@ NS_INLINE NSRange pagesRangeForFrame(CGRect pageframe, NSUInteger outerwidth) {
 }
 
 NS_INLINE NSUInteger maxVisiblePagesInFrame(CGRect frame, NSUInteger pagesize) {
-  return ceilf(frame.size.width / (CGFloat)pagesize) + 1;
+  NSUInteger max = ceilf(frame.size.width / (CGFloat)pagesize) + 1;
+  //  NSLog(@"Max visible pages: %u", max);
+  return max;
 }
 
 /*
@@ -288,6 +291,8 @@ NS_INLINE NSUInteger maxVisiblePagesInFrame(CGRect frame, NSUInteger pagesize) {
     if (onVisibleRangeChanged) onVisibleRangeChanged(range);
     return;
   }
+  
+  //  NSLog(@"range not considered changed: %@", NSStringFromRange(range));
 }
 
 
@@ -317,10 +322,8 @@ NS_INLINE NSUInteger maxVisiblePagesInFrame(CGRect frame, NSUInteger pagesize) {
   self.contentOffset = (CGPoint){(CGFloat)MIN(_contentOffsetX * deltaWidth, maxContentOffsetX), 0.0f};
   
   // Now fix the visible pages range and load missings
-  if (fabs(self.contentOffset.x - maxContentOffsetX) < 0.1f) {
-    _visiblePagesRange = pagesRangeForFrame((CGRect){{self.contentOffset.x, 0.0f}, {self.bounds.size.width, 0.0f}}, outerWidth);
-    [self loadPages];
-  }
+  _visiblePagesRange = pagesRangeForFrame((CGRect){{self.contentOffset.x, 0.0f}, {self.bounds.size.width, 0.0f}}, outerWidth);
+  [self loadPages];
   
   // Set the new frame of all cached pages
   [_cache enumerateIndexesAndObjectsUsingBlock:^(NSInteger index, UIView* page, BOOL *stop) {

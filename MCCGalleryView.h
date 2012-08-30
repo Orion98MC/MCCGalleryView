@@ -128,6 +128,7 @@
 - (NSRange)pagesRangeForFrame:(CGRect)frame;
 - (NSRange)visiblePagesRange;
 - (void)enumerateCachedIndexesAndPagesUsingBlock:(void (^)(NSInteger index, UIView *page, BOOL *stop))block;
+- (NSInteger)innerWidth;
 
 /* Caching methods */
 - (void)loadPages;
