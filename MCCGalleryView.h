@@ -133,5 +133,6 @@
 /* Caching methods */
 - (void)loadPages;
 - (UIView *)dequeueReusablePageWithIdentifier:(NSString *)identifier;
+- (void)setHalfPreload:(NSUInteger)amount;
 
 @end

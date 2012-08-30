@@ -38,7 +38,6 @@
 @interface MCCGalleryView ()
 @property (retain, nonatomic) MCCActiveRangeCache *_cache;
 @property (assign, nonatomic) NSRange _visiblePagesRange;
-@property (assign, nonatomic) NSUInteger preload;
 @property (assign, nonatomic) NSUInteger halfPreload;
                                                     /*  padding/2             padding/2
                                                          v                         v   */
@@ -51,7 +50,7 @@
 @end
 
 @implementation MCCGalleryView
-@synthesize pagesCount, _visiblePagesRange, innerWidth, outerWidth, avoidScrollingComputation, singleTapTimer, preload, halfPreload;
+@synthesize pagesCount, _visiblePagesRange, innerWidth, outerWidth, avoidScrollingComputation, singleTapTimer, halfPreload;
 @synthesize pageWidth, horizontalPadding, onVisibleRangeChanged, _cache, onSingleTap, onDoubleTap, onScrollViewDidScroll;
 
 - (id)initWithFrame:(CGRect)frame {
@@ -74,8 +73,7 @@
     pageWidth = 0;
     innerWidth = 0;
     outerWidth = 0;
-    preload = 0;
-    halfPreload = 0;
+    halfPreload = 1; /* number of pages on each visible edges that must be pre-loaded */
     pagesCount = 0;
     horizontalPadding = 0;
     avoidScrollingComputation = FALSE;
@@ -126,12 +124,7 @@
   
   /* initial visible pages range */
   _visiblePagesRange = pagesRangeForFrame((CGRect){{self.contentOffset.x, 0}, {self.bounds.size.width, 0}}, outerWidth);
-  
-  /* Preloaded pages */
-  NSInteger maxVisiblePages = maxVisiblePagesInFrame(self.bounds, outerWidth);
-  preload = MAX(maxVisiblePages + 1 - _visiblePagesRange.length, 2); /* number of pages to also preload */
-  halfPreload = floorf((float)preload / 2.0f); /* cache the half */
-  
+    
   /* Content size */
   self.contentSize = CGSizeMake(outerWidth * pagesCount, self.bounds.size.height);
 }
@@ -140,20 +133,20 @@
 
 #pragma mark pages
 
-NS_INLINE void _loadPages(NSRange visiblePagesRange, NSUInteger pagesCount, NSUInteger preload, NSUInteger halfPreload, MCCActiveRangeCache *cache) {
-  //  NSLog(@"_loadPages(%@, %u, %u, %u, %p)", NSStringFromRange(visiblePagesRange), pagesCount, preload, halfPreload, cache);
+NS_INLINE void _loadPages(NSRange visiblePagesRange, NSUInteger pagesCount, NSUInteger halfPreload, MCCActiveRangeCache *cache) {
+  //  NSLog(@"_loadPages(%@, %u, %u, %p)", NSStringFromRange(visiblePagesRange), pagesCount, halfPreload, cache);
   NSInteger firstIndex = visiblePagesRange.location;
   NSInteger lastIndex = NSMaxRange(visiblePagesRange) - 1;
   firstIndex = MAX(0, firstIndex - (NSInteger)halfPreload);
-  lastIndex = MIN(pagesCount - 1, lastIndex + (NSInteger)preload - (NSInteger)halfPreload);
+  lastIndex = MIN(pagesCount - 1, lastIndex + (NSInteger)halfPreload);
   
   NSRange range = NSMakeRange((NSUInteger)firstIndex, (NSUInteger)(lastIndex - firstIndex + 1));
-  //  NSLog(@"Active Range: %@", NSStringFromRange(range));
+  NSLog(@"Active Range: %@", NSStringFromRange(range));
   [cache setActiveRange:range];
 }
 
 - (void)loadPages { /* load the visible pages and the preloadable pages */
-  _loadPages(_visiblePagesRange, pagesCount, preload, halfPreload, [self cache]);
+  _loadPages(_visiblePagesRange, pagesCount, halfPreload, [self cache]);
 }
 
 - (void)setPagesCount:(NSUInteger)count {
@@ -206,17 +199,8 @@ NS_INLINE NSRange pagesRangeForFrame(CGRect pageframe, NSUInteger outerwidth) {
 
 NS_INLINE NSUInteger maxVisiblePagesInFrame(CGRect frame, NSUInteger pagesize) {
   NSUInteger max = ceilf(frame.size.width / (CGFloat)pagesize) + 1;
-  //  NSLog(@"Max visible pages: %u", max);
   return max;
 }
-
-/*
-- (NSArray *)cachedPagesAtIndexPassingTest:(BOOL (^)(NSUInteger index, BOOL *stop))block {
-  return [_cache objectsForKeysPassingTest:^BOOL(id key, id obj, BOOL *stop) {
-    return block((NSUInteger)[key integerValue], stop);
-  }];
-}
-*/
 
 - (void)enumerateCachedIndexesAndPagesUsingBlock:(void (^)(NSInteger index, UIView *page, BOOL *stop))block {
   return [_cache enumerateIndexesAndObjectsUsingBlock:^(NSInteger index, id obj, BOOL *stop) {
@@ -226,6 +210,11 @@ NS_INLINE NSUInteger maxVisiblePagesInFrame(CGRect frame, NSUInteger pagesize) {
 
 
 #pragma mark Cache methods
+
+- (void)setHalfPreload:(NSUInteger)amount {
+  halfPreload = amount;
+  [self setup];
+}
 
 - (UIView *)dequeueReusablePageWithIdentifier:(NSString *)identifier {
   return (UIView *)[_cache dequeueReusableObjectWithIdentifier:identifier];
@@ -278,16 +267,16 @@ NS_INLINE NSUInteger maxVisiblePagesInFrame(CGRect frame, NSUInteger pagesize) {
   
   NSRange range = pagesRangeForFrame((CGRect){{self.contentOffset.x, 0.0f}, {self.bounds.size.width, 0.0f}}, outerWidth);
   
-  if ((range.location > _visiblePagesRange.location) || ((range.location == _visiblePagesRange.location) && (range.length > _visiblePagesRange.length))) {
+  if ((range.location > _visiblePagesRange.location) || ((range.location == _visiblePagesRange.location) && (range.length != _visiblePagesRange.length))) {
     _visiblePagesRange = range;
-    _loadPages(_visiblePagesRange, pagesCount, preload, halfPreload, _cache);
+    _loadPages(_visiblePagesRange, pagesCount, halfPreload, _cache);
     if (onVisibleRangeChanged) onVisibleRangeChanged(range);
     return;
   }
   
   if ((range.location < _visiblePagesRange.location)) {
     _visiblePagesRange = range;
-    _loadPages(_visiblePagesRange, pagesCount, preload, halfPreload, _cache);
+    _loadPages(_visiblePagesRange, pagesCount, halfPreload, _cache);
     if (onVisibleRangeChanged) onVisibleRangeChanged(range);
     return;
   }

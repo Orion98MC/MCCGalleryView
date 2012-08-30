@@ -91,8 +91,9 @@
 
 @interface MCCZImageView : UIScrollView <UIScrollViewDelegate>
 
-@property (assign, nonatomic) UIViewContentMode contentMode; // Sets the starting zoom scale, default is UIViewContentModeScaleAspectFit
+@property (assign, nonatomic) UIViewContentMode contentMode; // Sets the contentMode of the image, default is UIViewContentModeScaleAspectFit
 
 - (void)setImage:(UIImage *)image;
+- (void)setZoomScaleForContentMode:(UIViewContentMode)mode animated:(BOOL)animated;
 
 @end

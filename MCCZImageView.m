@@ -83,7 +83,7 @@
 - (UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView { return imageView; }
 
 
-#pragma mark View management
+#pragma mark Layout management
 
 - (void)layoutSubviews {
   CGSize boundsSize = self.bounds.size;
@@ -130,7 +130,6 @@
 
 - (void)reset {
   CGSize imageSize = imageView.image.size;
-  CGSize boundsSize = self.bounds.size;
 
   // Reset imageView frame and bounds
   imageView.frame = CGRectMake(0.0f, 0.0f, imageSize.width, imageSize.height);
@@ -139,6 +138,14 @@
   // Reset scrollView content
   self.contentSize = imageSize;
   self.contentOffset = CGPointMake(0.0f, 0.0f);
+  
+  // Content mode sets current zoomscale
+  _resetZoom(self, contentMode, imageView);
+}
+
+NS_INLINE void _resetZoom(UIScrollView *self, UIViewContentMode contentMode, UIImageView *imageView) {
+  CGSize imageSize = imageView.image.size;
+  CGSize boundsSize = self.bounds.size;
   
   // Compute zoom scales
   CGFloat xScale = boundsSize.width / imageSize.width;
@@ -160,8 +167,6 @@
   // Set min and max zoomscales
   self.minimumZoomScale = minScale;
   self.maximumZoomScale = maxScale;
-  
-  // Content mode sets current zoomscale
   switch (contentMode) {
     case UIViewContentModeCenter:
       self.zoomScale = 1.0;
@@ -174,6 +179,16 @@
       break;
     default:
       self.zoomScale = fitScale;
+  }
+}
+
+- (void)setZoomScaleForContentMode:(UIViewContentMode)mode animated:(BOOL)animated {
+  if (animated) {
+    [UIView animateWithDuration:0.2 animations:^{
+      _resetZoom(self, contentMode, imageView);
+    }];
+  } else {
+    _resetZoom(self, contentMode, imageView);
   }
 }
 
