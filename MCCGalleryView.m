@@ -141,7 +141,7 @@ NS_INLINE void _loadPages(NSRange visiblePagesRange, NSUInteger pagesCount, NSUI
   lastIndex = MIN(pagesCount - 1, lastIndex + (NSInteger)halfPreload);
   
   NSRange range = NSMakeRange((NSUInteger)firstIndex, (NSUInteger)(lastIndex - firstIndex + 1));
-  NSLog(@"Active Range: %@", NSStringFromRange(range));
+  // NSLog(@"Active Range: %@", NSStringFromRange(range));
   [cache setActiveRange:range];
 }
 
