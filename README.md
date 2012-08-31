@@ -132,6 +132,10 @@ This code creates a gallery in full screen and displays 40 pages of 130 pixels w
 
 ```
 
+## Demo
+
+There is a demo XCode project that displays a sample gallery of images here: https://github.com/Orion98MC/MCCGalleryViewDemo
+
 
 ## License terms
 
