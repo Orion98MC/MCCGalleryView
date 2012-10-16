@@ -33,6 +33,7 @@
 */
 
 #import "MCCZImageView.h"
+//#define DEBUG_MCCZImageView
 
 @interface MCCZImageView ()
 @property (retain, nonatomic) UIImageView *imageView;
@@ -55,6 +56,7 @@
     
     /* Embedded ImageView setup */
     self.imageView = [[[UIImageView alloc]initWithFrame:CGRectZero]autorelease];
+//    self.imageView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
     imageView.contentMode = UIViewContentModeCenter;
     imageView.backgroundColor = [UIColor clearColor];
     [self addSubview:imageView];
@@ -75,6 +77,10 @@
 - (void)dealloc {
   self.imageView = nil;
   [super dealloc];
+}
+
+- (NSString *)description {
+  return [[super description]stringByAppendingFormat:@"\nImageView: %@", self.imageView];
 }
 
 
@@ -107,9 +113,14 @@
     // Center if needed
     if (!CGRectEqualToRect(self.imageView.frame, frameToCenter)) {
       self.imageView.frame = frameToCenter;
+#ifdef DEBUG_MCCZImageView
+      NSLog(@"centered: %@", imageView);
+#endif
     }
   } else {
-    //    NSLog(@"No frame to center: %@", imageView);
+#ifdef DEBUG_MCCZImageView
+    NSLog(@"No frame to center: %@", imageView);
+#endif
   }
   
   [super layoutSubviews];
@@ -155,14 +166,17 @@ NS_INLINE void _resetZoom(UIScrollView *self, UIViewContentMode contentMode, UII
   CGFloat fillScale = MAX(xScale, yScale);
   CGFloat minScale = fitScale;
 	
-	// If image is smaller than the screen then ensure we show it at
-	// min scale of 1
-	if (xScale > 1.0f && yScale > 1.0f) { minScale = 1.0f; }
-  
-	CGFloat maxScale = 2.0f; // Allow double scale TODO: allow users to specify the max
+  CGFloat maxScale = 2.0f; // Allow double scale TODO: allow users to specify the max
 	if ([UIScreen instancesRespondToSelector:@selector(scale)]) {
 		maxScale = maxScale / [[UIScreen mainScreen] scale];
 	}
+  
+	// If image is smaller than the screen then ensure we show it at
+	// min scale of 1
+	if (xScale > 1.0f && yScale > 1.0f) {
+    minScale = 1.0f;
+    maxScale = 2.0f;
+  }
   
   // Set min and max zoomscales
   self.minimumZoomScale = minScale;
@@ -196,13 +210,20 @@ NS_INLINE void _resetZoom(UIScrollView *self, UIViewContentMode contentMode, UII
 #pragma mark Gestures handlers
 
 - (void)doubleTapDetected:(UITapGestureRecognizer *)sender {
+#ifdef DEBUG_MCCZImageView
+  NSLog(@"double tap: %f (%f - %f)", self.zoomScale, self.minimumZoomScale, self.maximumZoomScale);
+#endif
   if (sender.state == UIGestureRecognizerStateEnded) {
     CGFloat targetZoomScale = 1.0f;
     if (self.zoomScale < self.maximumZoomScale) {
+      
       targetZoomScale = self.maximumZoomScale;
     } else {
       targetZoomScale = self.minimumZoomScale;
     }
+#ifdef DEBUG_MCCZImageView
+    NSLog(@"target zoom scale: %f", targetZoomScale);
+#endif
     [self setZoomScale:targetZoomScale animated:YES];
   }
   

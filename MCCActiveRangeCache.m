@@ -46,10 +46,17 @@
   return self;
 }
 
+- (void)dealloc {
+  self.createBlock = nil;
+  [super dealloc];
+}
+
 - (void)setRecycleBlock:(NSString *(^)(id, NSUInteger))callback {
+  __block typeof(self) __self = self;
+  
   [super setRecycleBlock:^NSString*(id object, NSUInteger index){
     NSString *identifier = nil;
-    if (!NSLocationInRange(index, _activeRange)) {
+    if (!NSLocationInRange(index, __self._activeRange)) {
       identifier = callback(object, index);
     }
     return identifier;

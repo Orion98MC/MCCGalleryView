@@ -98,14 +98,20 @@
   __block int _left = [cached count] - size;
   if (_left <= 0) return;
   
+  NSMutableSet *set = [NSMutableSet set];
+  
   [cached enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
     NSString *identifier = recycleBlock(obj, [key integerValue]);
     if (identifier) {
-      [self recycleObject:obj key:key identifier:identifier];
+      [set addObject:@[obj, key, identifier]];
       _left--;
     }
     
     if (_left == 0) *stop = TRUE;
+  }];
+  
+  [set enumerateObjectsUsingBlock:^(id oki, BOOL *stop) {
+    [self recycleObject:oki[0] key:oki[1] identifier:oki[2]];
   }];
   
   NSAssert([cached count] <= size, @"after recycle the number of cached object %d should be less or equal to the cache size %d", [cached count], size);

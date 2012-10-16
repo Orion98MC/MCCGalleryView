@@ -35,6 +35,8 @@
 #import "MCCGalleryView.h"
 #import "MCCActiveRangeCache.h"
 
+//#define DEBUG_MCCGalleryView
+
 @interface MCCGalleryView ()
 @property (retain, nonatomic) MCCActiveRangeCache *_cache;
 @property (assign, nonatomic) NSRange _visiblePagesRange;
@@ -98,6 +100,9 @@
 }
 
 - (void)dealloc {
+#ifdef DEBUG_MCCGalleryView
+  NSLog(@"dealloc %@", NSStringFromClass([self class]));
+#endif
   [singleTapTimer invalidate];
   self.singleTapTimer = nil;
   self.onVisibleRangeChanged = nil;
@@ -134,14 +139,18 @@
 #pragma mark pages
 
 NS_INLINE void _loadPages(NSRange visiblePagesRange, NSUInteger pagesCount, NSUInteger halfPreload, MCCActiveRangeCache *cache) {
-  //  NSLog(@"_loadPages(%@, %u, %u, %p)", NSStringFromRange(visiblePagesRange), pagesCount, halfPreload, cache);
+#ifdef DEBUG_MCCGalleryView
+  NSLog(@"_loadPages(%@, %u, %u, %p)", NSStringFromRange(visiblePagesRange), pagesCount, halfPreload, cache);
+#endif
   NSInteger firstIndex = visiblePagesRange.location;
   NSInteger lastIndex = NSMaxRange(visiblePagesRange) - 1;
   firstIndex = MAX(0, firstIndex - (NSInteger)halfPreload);
   lastIndex = MIN(pagesCount - 1, lastIndex + (NSInteger)halfPreload);
   
   NSRange range = NSMakeRange((NSUInteger)firstIndex, (NSUInteger)(lastIndex - firstIndex + 1));
-  // NSLog(@"Active Range: %@", NSStringFromRange(range));
+#ifdef DEBUG_MCCGalleryView
+  NSLog(@"Active Range: %@", NSStringFromRange(range));
+#endif
   [cache setActiveRange:range];
 }
 
@@ -228,6 +237,8 @@ NS_INLINE NSUInteger maxVisiblePagesInFrame(CGRect frame, NSUInteger pagesize) {
 }
 
 - (void)setPageBlock:(UIView *(^)(NSUInteger))pageBlock {
+  __block typeof(self) __self = self;
+  
   [[self cache]setCreateBlock:^id(NSUInteger pageIndex) {
     
     // Get the page
@@ -239,12 +250,12 @@ NS_INLINE NSUInteger maxVisiblePagesInFrame(CGRect frame, NSUInteger pagesize) {
       page.hidden = TRUE;
     }
     
-    page.frame = frameForPageAtIndex(pageIndex, outerWidth, horizontalPadding, self.bounds.size.height);
+    page.frame = frameForPageAtIndex(pageIndex, __self.outerWidth, __self.horizontalPadding, __self.bounds.size.height);
     
     if (page.superview) {
       [UIView setAnimationsEnabled:TRUE];
     } else {
-      [self addSubview:page];
+      [__self addSubview:page];
     }
     
     // Reveal the page
@@ -266,7 +277,7 @@ NS_INLINE NSUInteger maxVisiblePagesInFrame(CGRect frame, NSUInteger pagesize) {
   if (onScrollViewDidScroll) onScrollViewDidScroll();
   
   NSRange range = pagesRangeForFrame((CGRect){{self.contentOffset.x, 0.0f}, {self.bounds.size.width, 0.0f}}, outerWidth);
-  
+
   if ((range.location > _visiblePagesRange.location) || ((range.location == _visiblePagesRange.location) && (range.length != _visiblePagesRange.length))) {
     _visiblePagesRange = range;
     _loadPages(_visiblePagesRange, pagesCount, halfPreload, _cache);
@@ -280,8 +291,9 @@ NS_INLINE NSUInteger maxVisiblePagesInFrame(CGRect frame, NSUInteger pagesize) {
     if (onVisibleRangeChanged) onVisibleRangeChanged(range);
     return;
   }
-  
-  //  NSLog(@"range not considered changed: %@", NSStringFromRange(range));
+#ifdef DEBUG_MCCGalleryView
+  NSLog(@"range not considered changed: %@", NSStringFromRange(range));
+#endif
 }
 
 
