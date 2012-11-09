@@ -135,4 +135,5 @@
 - (UIView *)dequeueReusablePageWithIdentifier:(NSString *)identifier;
 - (void)setHalfPreload:(NSUInteger)amount;
 
+- (void)reload;
 @end

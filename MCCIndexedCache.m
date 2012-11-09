@@ -64,7 +64,11 @@
 
 - (void)setObject:(id)object atIndex:(NSUInteger)index {
   [cached setObject:object forKey:[NSString stringWithFormat:@"%u", index]];
-  if (!norecycle && recycleBlock) [self recycle];
+  if (!norecycle && recycleBlock) dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+//    dispatch_sync(dispatch_get_main_queue(), ^{
+      [self recycle];
+//    });
+  });
 }
 
 - (id)objectAtIndex:(NSUInteger)index {

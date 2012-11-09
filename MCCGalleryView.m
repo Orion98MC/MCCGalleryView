@@ -158,6 +158,16 @@ NS_INLINE void _loadPages(NSRange visiblePagesRange, NSUInteger pagesCount, NSUI
   _loadPages(_visiblePagesRange, pagesCount, halfPreload, [self cache]);
 }
 
+- (void)reload {
+  self.contentOffset = CGPointZero;
+  [self enumerateCachedIndexesAndPagesUsingBlock:^(NSInteger index, UIView *page, BOOL *stop) {
+    [page removeFromSuperview];
+  }];
+  [[self cache]flush];
+  [[self cache]setActiveRange:NSMakeRange(0, 0)];
+  [self loadPages];
+}
+
 - (void)setPagesCount:(NSUInteger)count {
   pagesCount = count;
   [self setup];

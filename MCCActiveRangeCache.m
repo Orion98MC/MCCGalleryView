@@ -73,7 +73,7 @@
 }
 
 - (void)loadPages {
-  NSAssert(_activeRange.length != 0, @"Active range with null length");
+  if (_activeRange.length == 0) return;
   self.norecycle = TRUE;
   for (NSUInteger index = _activeRange.location; index < NSMaxRange(_activeRange); index++) {
     if (![self objectAtIndex:index]) {
