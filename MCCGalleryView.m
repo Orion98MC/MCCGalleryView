@@ -155,6 +155,7 @@ NS_INLINE void _loadPages(NSRange visiblePagesRange, NSUInteger pagesCount, NSUI
 }
 
 - (void)loadPages { /* load the visible pages and the preloadable pages */
+  if (!self.pagesCount) return;
   _loadPages(_visiblePagesRange, pagesCount, halfPreload, [self cache]);
 }
 
@@ -184,6 +185,7 @@ NS_INLINE void _loadPages(NSRange visiblePagesRange, NSUInteger pagesCount, NSUI
 }
 
 - (NSInteger)innerWidth { return innerWidth; }
+- (NSInteger)outerWidth { return outerWidth; }
 
 
 NS_INLINE NSRange visiblePagesRangeInScrollview(UIScrollView *scrollview, NSInteger pagewidth, NSUInteger pagescount) {
