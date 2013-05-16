@@ -47,7 +47,7 @@
 }
 
 - (void)dealloc {
-  self.createBlock = nil;
+  if (createBlock) Block_release(createBlock);
   [super dealloc];
 }
 

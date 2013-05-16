@@ -58,7 +58,7 @@
 - (void)dealloc {
   self.recycled = nil;
   self.cached = nil;
-  self.recycleBlock = nil;
+  if (recycleBlock) Block_release(recycleBlock);
   [super dealloc];
 }
 
